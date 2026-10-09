@@ -1,0 +1,50 @@
+name: Build Jableh APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check project files
+        run: |
+          echo "Repository contents:"
+          ls -la
+          echo "Checking for Gradle project..."
+          find . -maxdepth 4 \( -name gradlew -o -name settings.gradle -o -name settings.gradle.kts \)
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build release APK
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleRelease
+          elif [ -f ./jableh_real_estate_android/gradlew ]; then
+            cd ./jableh_real_estate_android
+            chmod +x ./gradlew
+            ./gradlew assembleRelease
+          else
+            echo "Android project files are not uploaded yet."
+            exit 1
+          fi
+
+      - name: Upload APK artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jableh-real-estate-release-apk
+          path: '**/build/outputs/apk/release/*.apk'
+          if-no-files-found: error
