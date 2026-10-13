@@ -16,9 +16,8 @@ jobs:
 
       - name: Extract project ZIP
         run: |
+          mkdir -p extracted
           unzip -o jableh-real-estate-final-2026-v2.zip -d extracted
-          echo "Files extracted:"
-          find extracted -maxdepth 4 -type f | head -100
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -26,27 +25,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Locate Android project
-        run: |
-          find extracted -name gradlew -type f
-          find extracted -name settings.gradle -o -name settings.gradle.kts
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
-      - name: Build release APK
+      - name: Build APK
         run: |
-          GRADLEW=$(find extracted -name gradlew -type f | head -1)
-          if [ -z "$GRADLEW" ]; then
-            echo "Gradle wrapper not found in uploaded ZIP"
-            exit 1
-          fi
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          cd extracted/jableh_real_estate_android
+          gradle assembleRelease
 
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: jableh-real-estate-release-apk
-          path: extracted/**/build/outputs/apk/release/*.apk
+          path: extracted/jableh_real_estate_android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
