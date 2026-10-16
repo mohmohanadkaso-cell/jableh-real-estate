@@ -42,3 +42,4 @@ jobs:
           name: jableh-real-estate-release-apk
           path: extracted/jableh_real_estate_android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+          
