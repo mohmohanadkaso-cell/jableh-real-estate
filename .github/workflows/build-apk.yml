@@ -33,13 +33,13 @@ jobs:
       - name: Build APK
         run: |
           cd extracted/jableh_real_estate_android
-          gradle assembleRelease
+          gradle assembleDebug
 
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: jableh-real-estate-release-apk
-          path: extracted/jableh_real_estate_android/app/build/outputs/apk/release/*.apk
+          path: extracted/jableh_real_estate_android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           
