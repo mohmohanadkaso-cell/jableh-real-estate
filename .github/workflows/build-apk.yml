@@ -1,45 +1,47 @@
 name: Build Jableh APK
 
 on:
-  workflow_dispatch:
+workflow_dispatch:
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Extract project ZIP
-        run: |
-          mkdir -p extracted
-          unzip -o jableh-real-estate-final-2026-v2.zip -d extracted
+  - name: Extract project ZIP
+    run: |
+      mkdir -p extracted
+      unzip -o jableh-real-estate-final-2026-v2.zip -d extracted
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+  - name: Set up Gradle
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
 
-      - name: Build APK
-        run: |
-          cd extracted/jableh_real_estate_android
-          gradle assembleDebug
+  - name: Build and verify APK
+    run: |
+      cd extracted/jableh_real_estate_android
+      gradle assembleDebug
+      APK="app/build/outputs/apk/debug/app-debug.apk"
+      test -f "$APK"
+      ls -lh "$APK"
+      test "$(stat -c%s "$APK")" -gt 100000
 
-      - name: Upload APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jableh-real-estate-release-apk
-          path: extracted/jableh_real_estate_android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          
+  - name: Upload installable APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: jableh-real-estate-debug-apk
+      path: extracted/jableh_real_estate_android/app/build/outputs/apk/debug/app-debug.apk
+      if-no-files-found: error
